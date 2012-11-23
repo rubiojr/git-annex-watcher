@@ -1,0 +1,11 @@
+git-annex-watcher (0.1.1-1) quantal; urgency=low
+
+  * Updated version
+
+ -- Sergio Rubio <rubiojr@frameos.org>  Wed, 22 Nov 2012 20:13:15 +0100
+
+git-annex-watcher (0.1-1) quantal; urgency=low
+
+  * Initial release 
+
+ -- Sergio Rubio <rubiojr@frameos.org>  Wed, 21 Nov 2012 22:56:15 +0100

@@ -1,0 +1,18 @@
+Source: git-annex-watcher
+Section: ruby
+Priority: optional
+Maintainer: Debian Ruby Extras Maintainers <pkg-ruby-extras-maintainers@lists.alioth.debian.org>
+Uploaders: Sergio Rubio <rubiojr@frameos.org>
+DM-Upload-Allowed: yes
+Build-Depends: debhelper (>= 7.0.50~), gem2deb (>= 0.2)
+Standards-Version: 3.9.3
+Homepage: http://github.com/rubiojr/git-annex-watcher
+XS-Ruby-Versions: all
+
+Package: git-annex-watcher
+Architecture: all
+XB-Ruby-Versions: ${ruby:Versions}
+Depends: ${shlibs:Depends}, ${misc:Depends}, ruby | ruby-interpreter, ruby-rb-inotify (>= 0.8.8), ruby-gtk2, ruby-uuidtools, git-annex
+# rb-inotify (>= 0), uuidtools (>= 0), gtk2 (>= 0), rb-inotify (>= 0), uuidtools (>= 0), gtk2 (>= 0)
+Description: Git Annex Desktop Status Icon
+ Git Annex Desktop Status Icon
