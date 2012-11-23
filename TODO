@@ -1,0 +1,2 @@
+* Show activity when git annex copy --to is checking remote files
+* Show activity when someone else is checking our files remotely

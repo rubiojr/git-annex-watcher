@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Version=0.1
+Name=Git Annex Watcher
+Comment=Desktop Status Icon for Git Annex
+Icon=git-annex-watcher
+Terminal=false
+Exec=/usr/bin/git-annex-watcher
+Categories=Network;FileTransfer;

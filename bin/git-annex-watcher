@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+#
+# Got some help from
+# https://wfarr.wordpress.com/category/linux/ruby/
+# http://ruby-gnome2.sourceforge.jp/hiki.cgi?StatusIcon+example
+
+require 'pp'
+require 'thread'
+require 'uuidtools'
+require 'gtk2'
+require 'gaw/threading_hack'
+require 'gaw/watcher'
+require 'gaw/settings'
+require 'gaw/log'
+require 'gaw/version'
+include GAW
+
+listeners = []
+settings = GAW::Settings.load
+icon = WatcherIcon.new
+icon.start
+settings.each do |uuid, settings|
+  watcher = Watcher.new settings['path'], icon
+  Log.debug "Adding watcher for #{settings['path']}"
+  listeners << watcher
+end
+
+# threading_hack
+Gtk::Settings.default.set_property "gtk-menu-images", true
+Gtk.main_with_queue 50
