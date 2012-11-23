@@ -71,14 +71,14 @@ module GAW
 
     def queue_send
       # We want to keep the queue small
-      return if @queue.size >= 10
+      return if @queue.size >= 3 
       Log.debug 'enqueing "send" event...'
       @queue << :send
     end
 
     def queue_recv
       # We want to keep the queue small
-      return if @queue.size >= 10
+      return if @queue.size >= 3
       Log.debug 'enqueing "recv" event...'
       @queue << :receive
     end
@@ -219,26 +219,80 @@ module GAW
 
   class Watcher
 
-    attr_accessor :status
-    attr_reader   :opened_files
+    def rsync_working?(file)
+      proc_name = (`/bin/ps h -ocomm #{`/bin/fuser #{file}`.strip.chomp}` || '')
+      proc_name.strip.chomp == 'rsync'
+    end
+
+    def file_opened?(file)
+      !(`/bin/fuser #{file}` || '').strip.chomp.empty?
+    end
 
     def initialize(dir, icon)
-      @watcher = INotify::Notifier.new
-      @regexp = Regexp.new /(transfer\/(upload|download))|tmp|ssh/
-      @watcher.watch(dir, :recursive, :modify, :access, :close, :open) do |event|
-        Log.debug "Receiving inotify event: #{event.absolute_name}"
-        next unless event.absolute_name =~ @regexp
-        next if File.directory? event.absolute_name 
-        if event.absolute_name =~ /upload/
-          icon.queue_send
-        elsif event.absolute_name =~ /download/
-          icon.queue_recv
-        else
-          icon.queue_other
+      @mutex = Mutex.new
+      @opened_files = []
+
+      @close_notifier = INotify::Notifier.new
+      @close_notifier.watch(dir, :recursive, :close) do |event|
+        next if event.flags.include?(:isdir)
+        file = event.absolute_name
+        @mutex.synchronize do
+          @opened_files.delete file
         end
       end
-      @thread = Thread.start do
-        @watcher.run
+
+      @access_notifier = INotify::Notifier.new
+      @access_notifier.watch dir, :recursive, :access do |event|
+        next if event.flags.include?(:isdir)
+        file = event.absolute_name
+        @mutex.synchronize do
+          @opened_files << file unless @opened_files.include?(file)
+        end
+      end
+
+      @open_notifier = INotify::Notifier.new
+      @open_notifier.watch(dir, :recursive, :open) do |event|
+        next if event.flags.include?(:isdir)
+        file = event.absolute_name
+        @mutex.synchronize do
+          @opened_files << file
+        end
+      end
+
+      @eventer = Thread.start do  
+        loop do
+          @mutex.synchronize do
+            if @opened_files.size > 0
+              @opened_files.each do |f|
+                if f =~ /download|tmp/
+                  Log.debug "Receiving event"
+                  icon.queue_recv
+                elsif f =~ /upload/
+                  Log.debug "Sending event"
+                  icon.queue_send 
+                elsif f =~ /objects/ and rsync_working?(f)
+                  Log.debug "Sending: #{f}"
+                  icon.queue_send
+                elsif f !~ /\.lock$/
+                  Log.debug "Other: #{f}"
+                  icon.queue_other
+                end
+                @opened_files.delete(f) unless file_opened?(f)
+              end
+            end
+          end
+          sleep 1.5
+        end
+      end
+      
+      @access_monitor = Thread.start do
+        @access_notifier.run
+      end
+      @open_monitor = Thread.start do
+        @open_notifier.run
+      end
+      @close_monitor = Thread.start do
+        @close_notifier.run
       end
     end
 
