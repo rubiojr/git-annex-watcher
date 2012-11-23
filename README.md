@@ -1,13 +1,20 @@
-Git Annex Watcher Status Icon
+# Git Annex Watcher
+
+Git Annex Desktop StatusIcon/AppIndicator
 
 # Install
 
 ## Ubuntu
 
-sudo add-apt-repository ppa:rubiojr/git-annex
+    sudo add-apt-repository ppa:rubiojr/git-annex && sudo apt-get update
+    sudo apt-get install git-annex-watcher
 
-Enabling the system tray icon in ubuntu:
+If you are using Unity, open a terminal and run:
 
-gsettings set com.canonical.Unity.Panel systray-whitelist ['git-annex-watcher']
+    git-annex-watcher-tray enable
 
-http://www.poppa.se/blog/notification-area-icons-in-ubuntu-11-04/
+To enable the system tray icon.
+
+Now open the Git Annex Watcher application. Should be located in
+Applications -> Internet if you're using something like XFCE or use the Unity
+Dash to find it.
